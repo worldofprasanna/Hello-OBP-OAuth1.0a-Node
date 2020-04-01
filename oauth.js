@@ -454,12 +454,33 @@ app.get('/createEntitlements', function(req, res) {
 
 });
 
+app.get('/getCustomerAddress', function(req, res){
+  var customerId = ''
 
+  consumer.get(apiHost + "/obp/v4.0.0/users/current/customers",
+  req.session.oauthAccessToken,
+  req.session.oauthAccessTokenSecret,
+  function (error, data, response) {
+      try {
+      var parsedData = JSON.parse(data);
+      customerId = parsedData.customers[0].customer_id
 
-
-
-
-
+      consumer.get(apiHost + `/obp/v4.0.0/banks/rbs/customers/${customerId}/addresses`,
+      req.session.oauthAccessToken,
+      req.session.oauthAccessTokenSecret,
+      function (error, data, response) {
+          try {
+          var parsedData = JSON.parse(data);
+          res.status(200).send(parsedData)
+        } catch (exception){
+          onException(res, exception, data);
+        }
+      });
+    } catch (exception){
+      onException(res, exception, data);
+    }
+  });
+});
 
 app.get('*', function(req, res){
   res.redirect('/connect');
